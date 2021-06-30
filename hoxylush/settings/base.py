@@ -11,9 +11,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-from my_settings import DATABASES, SECRET_KEY
 from datetime import timedelta
 import os
+
+def read_secret(secret_name):
+    file = open('/run/secrets/' + secret_name)
+    secret = file.read()
+    secret = secret.rstrip().lstrip()
+    file.close()
+    return secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -68,8 +74,16 @@ WSGI_APPLICATION = "hoxylush.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = DATABASES
-
+DATABASES = {
+    'default' : {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'hoxylush',
+        'USER': 'hoxylush',
+        'PASSWORD': read_secret('MYSQL_PASSWORD'),
+        'HOST': 'mariadb',
+        'PORT': '3306',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -155,7 +169,7 @@ REST_FRAMEWORK = {
 }
 
 JWT_AUTH = {
-    "JWT_SECRET_KEY": SECRET_KEY,
+    "JWT_SECRET_KEY": read_secret('DJANGO_SECRET_KEY'),
     "JWT_ALGORITHM": "HS256",
     "JWT_ALLOW_REFRESH": True,
     "JWT_EXPIRATION_DELTA": timedelta(days=7),
